@@ -1,0 +1,107 @@
+//genesis
+
+
+// by Kai DU, kai.du@ki.se
+function create_CaR
+    
+    str path = "CaR_channel" 
+
+    float xmin  = -0.10  /* minimum voltage we will see in the simulation */     // V
+    float xmax  = 0.05  /* maximum voltage we will see in the simulation */      // V
+    int xdivsFiner = 3000
+    int c = 0
+    float gMax = 1.0  // random number, but to be modified later
+
+ 	 /****** Begin vars used to enable genesis calculations ********/
+   float increment = (xmax - xmin)*1e3/xdivsFiner  // mV
+   echo "naF: increment" {increment} "mV"
+   float x = -100.00             // mV
+   float minf       = 0
+   float hinf       = 0
+   float mvhalf     = -23.3      // mV,  Sochivko,et.al. 2002 fixed with two gates!
+   float mslope     =  10      // mV, Sochivko,et.al. 2002 fixed with two gates!
+   float hvhalf     =  -33.3   // mV, wolf's model 
+   float hslope     =  17       // wolf's model
+   float mshift     =  0.0      //  mV
+   float hshift     = 0.0        // mV
+   float taum       = 0         // ms
+   float tauh       = 0         //  ms
+  	 /****** End vars used to enable genesis calculations **********/ 	 
+
+   pushe /library	  
+    create tabchannel {path} 
+    call {path} TABCREATE X {xdivsFiner} {xmin} {xmax}  // activation   gate
+    call {path} TABCREATE Y {xdivsFiner} {xmin} {xmax}  // inactivation gate
+/* Defines the powers of m Hodgkin-Huxley equationref: Katja Hoehn, et,al. 1993  */
+    setfield {path} Ek {Erev} Xpower 2 Ypower 1
+
+/********************* taken from Wolf's model************************************/
+// set tau_m table
+ float qfactor = 2.0    // experiment was done in room temperature 
+ create table  CaR_taum                    // ms
+ call  CaR_taum  TABCREATE 1 {xmin} {xmax}
+//the table corresponds to -100 mV to 50 mV
+ setfield CaR_taum table->table[0] 1.7  \
+                    table->table[1] 1.7  
+
+ call  CaR_tauh  TABCREATE 15 {xmin} {xmax}
+//the table corresponds to -100 mV to 50 mV
+ setfield CaR_tauh  table->table[0] 100   \
+                    table->table[1] 100    \
+                    table->table[2] 100    \
+                    table->table[3] 100    \
+                    table->table[4] 100    \
+                    table->table[5] 100   \
+                    table->table[6] 100   \
+                    table->table[7] 100  \
+                    table->table[8] 65 \
+                    table->table[9] 35\
+                    table->table[10] 30 \
+                    table->table[11] 20 \
+                    table->table[12] 20 \
+                    table->table[13] 20  \
+                    table->table[14] 20  \
+                    table->table[15] 20 
+
+
+call  CaR_taum  TABFILL  {xdivsFiner} 2
+call  CaR_tauh  TABFILL  {xdivsFiner} 2
+
+
+ for(c = 0; c < {xdivsFiner} + 1; c = c + 1) 
+         minf  = 1/(1 + {exp {-(x - mvhalf + mshift)/mslope}})
+         hinf  = 1/(1 + {exp {(x - hvhalf + hshift)/hslope}})			
+         taum  = {getfield naf_taum  table->table[{c}]}/qfactor
+         tauh  = {getfield naf_tauh  table->table[{c}]}/qfactor
+
+         setfield {path} X_A->table[{c}] {2*taum*1e-3}    // use m^2, the taum and tauh should X2, ref:  Katja Hoehn, et,al. 1993
+         setfield {path} X_B->table[{c}] {minf}
+         setfield {path} Y_A->table[{c}] {tauh*1e-3}
+         setfield {path} Y_B->table[{c}] {hinf}         
+         x = x + increment
+        
+    end
+
+
+
+    /* fill the tables with the values of tau and minf/hinf
+     * calculated from tau and minf/hinf
+     */
+   tweaktau {path} X
+   tweaktau {path} Y   
+
+
+  	create ghk {path}GHK
+
+  	setfield {path}GHK Cout 2 // Carter & Sabatini 2004 uses 2mM, 
+											// Wolf 5mM
+  	setfield {path}GHK valency 2.0
+  	setfield {path}GHK T {TEMPERATURE}
+	
+  	setfield {path} Gbar {gMax}
+  	addmsg {path} {path}GHK PERMEABILITY Gk	
+end
+
+
+
+

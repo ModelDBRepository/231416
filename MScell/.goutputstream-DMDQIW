@@ -1,0 +1,57 @@
+//genesis
+
+/***************************		MS Model, Version 5.10	**********************
+**************************** 	      	globals.g 			**********************
+Tom Sheehan tsheeha2@gmu.edu	thsheeha@vt.edu	703-538-8361
+*******************************************************************************
+	The capatilized parameters defined below are global and visable to all files
+	Capatilized parameters should be treated as constants
+******************************************************************************/
+/* AB: Comments indicate the qfactor used with the various channels
+*  conductance of CaN and CaL12 sum the inactivating and non-inactivating channel
+*  conductances from the previous model
+*/
+        float ELEAK = -0.070
+        float PI = 3.1415926
+        float RA = 1.0;
+        float RM = 8.69565217;
+        float CM = 0.01;
+        float EREST_ACT = -0.08
+ 	float TEMPERATURE = 35
+        float temperature = 35   // some old MS commands need it
+	str  CA_BUFF_1 = "Ca_difshell_1"     // L and T type channels
+	str  CA_BUFF_2 = "Ca_difshell_2"     // coupled to the other channels
+	str  CA_BUFF_3 = "Ca_difshell_3"     // all calcium channels
+	
+	int CaDyeFlag = 0    // flags of calcium dye. "0" means NO calcium dyes.
+                     // flag =2 : Fluo-4
+                     // flag =3 : Fluo-5F
+	int shellMode = 1     // we  have two shell-modes:
+                     //  mode = 0 : detailed multi-shell model, using "difshell" object
+                     //  mode = 1 : simple calcium pool adopted from  Sabatini's work(Sabatini, 2001, 2004)
+
+//parameters determined by hand tuning to match spike width, AHP shape &amp, fI curve
+//spike width with these globals plus spines = 0.88 ms
+        str gNaFprox={90000}*1  //qfactor = 1.2   90000
+        str gNaFmid={975}*0.1
+        str gNaFdist={975}*0.1
+
+        str gKAfprox={3214}*1   //qfactor=1.5 for inact
+        str gKAfmid={471}*1   //1/qfactor=1.5 for act!!!
+        str gKAfdist={314}*0.3
+
+        str gKAsprox={277}*0.5   //qfactor=2	 
+        str gKAsdist={22.9}*0.5
+
+        str gKIRsoma= 4.2*4          //qfactor = 0.5;   gKIR=4.2
+        str gKIRdist= 4.2*4
+        str gKDR={7.25}*1      //qfactor = 0.5  
+
+	float gCaL13 = 1.0625e-7  //qfactor=2
+	float gCaT  =  0.5875e-8
+	float gCaR  =  6.5e-7
+//	float gCaQ  =  1.5e-7
+	float gCaN =   2.5e-7       //qfactor=2
+	float gCaL12 = 0.8375e-7    //qfactor=2
+
+
